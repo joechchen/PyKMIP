@@ -30,6 +30,8 @@ from kmip.core import utils
 
 from kmip.services.server import auth
 
+# JC: checking crl
+from crl_checker import check_revoked_crypto_cert, Revoked, Error
 
 class KmipSession(threading.Thread):
     """
@@ -147,6 +149,14 @@ class KmipSession(threading.Thread):
                 raise exceptions.PermissionDenied(
                     "The client certificate could not be loaded from the "
                     "session connection."
+                )
+
+            try:
+              check_revoked_crypto_cert(certificate)
+              # we only return None if it's revoked
+            except Revoked as e:
+                raise exceptions.PermissionDenied(
+                    "The client certificate is revoked."
                 )
 
             if self._enable_tls_client_auth:
