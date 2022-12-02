@@ -4,3 +4,4 @@ requests
 six>=1.11.0
 sqlalchemy>=1.0
 sqlcipher3
+Crypto.Protocol.SecretSharing

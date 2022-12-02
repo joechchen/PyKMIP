@@ -47,6 +47,7 @@ class KmipServerConfig(object):
             'certificate_path',
             'key_path',
             'ca_path',
+            'database_path',
             'auth_suite'
         ]
         self._optional_settings = [
@@ -54,7 +55,6 @@ class KmipServerConfig(object):
             'enable_tls_client_auth',
             'tls_cipher_suites',
             'logging_level',
-            'database_path',
             'database_password'
         ]
 
@@ -70,6 +70,8 @@ class KmipServerConfig(object):
        # well-formed shard
        wfs=re.compile(r'^\d+,([0-9a-fA-F]+)$')
        done=False
+
+       print("Please telnet localhost 5066 # type the shards, when all the shards are entered, type commit.\n")
        while not done:
          try:
            connection, address = server.accept()
@@ -425,9 +427,7 @@ class KmipServerConfig(object):
             )
 
     def _set_database_path(self, value):
-        if not value:
-            self.settings['database_path'] = None
-        elif isinstance(value, six.string_types):
+        if isinstance(value, six.string_types):
             self.settings['database_path'] = value
         else:
             raise exceptions.ConfigurationError(
@@ -439,8 +439,10 @@ class KmipServerConfig(object):
         if not value:
             self.settings['database_password'] = None
         elif isinstance(value, six.string_types):
-            pw=self._get_shards()
-            self.settings['database_password'] = pw
+            if value.encode() == b'sss':
+              self.settings['database_password'] = self._get_shards()
+            else:
+              self.settings['database_password'] = value
         else:
             raise exceptions.ConfigurationError(
                 "The database password is an invalid string."
